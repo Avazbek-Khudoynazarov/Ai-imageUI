@@ -1,0 +1,59 @@
+.navbar-main {
+  width: 100%;
+  height: 70px;
+  background: #4a6360;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease-in-out; /* Smooth transition */
+}
+
+.navbar-main.fixed {
+  position: fixed;
+  top: 0;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background-color: #4a6360;
+  width: 100%;
+  z-index: 1000;
+  transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out; /* Smooth transition for fixed state */
+}
+
+.yeongnam-logo-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.yeongnam-logo-container img {
+  padding-left: 24px;
+}
+
+.menu-icon {
+  width: 48px !important;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.pricing-link {
+  padding: 10px 24px;
+  border: 2px solid #bec9c6;
+  border-radius: 8px;
+
+  font-family: "Roboto";
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.user-icon-price-link {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.user-logo {
+  width: 70px;
+  height: 70px;
+  color: #ffffff;
+}
