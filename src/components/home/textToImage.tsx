@@ -12,6 +12,7 @@ import Link from "next/link";
 import PopupState, { bindTrigger, bindMenu } from "material-ui-popup-state";
 
 import "./css/textToImage.css";
+import Image from "next/image";
 
 export default function TextToImage() {
   const [width, setWidth] = useState(0);
@@ -38,7 +39,9 @@ export default function TextToImage() {
       <div className="menu-nav-link">
         <div className={`from-text-page ${pathname === "/" ? "active" : ""}`}>
           <Link href="/" className="main-link-to-pages">
-            <img
+            <Image
+              width={24}
+              height={24}
               src="./assets/home/Tt.svg"
               alt="From Text Icon"
               draggable={false}
@@ -55,7 +58,9 @@ export default function TextToImage() {
           }`}
         >
           <Link href="/from-image" className="main-link-to-pages">
-            <img
+            <Image
+              width={24}
+              height={24}
               src="./assets/home/fromImage.svg"
               alt="From Image Icon"
               draggable={false}
@@ -72,7 +77,9 @@ export default function TextToImage() {
           }`}
         >
           <Link href="/in-painting" className="main-link-to-pages">
-            <img
+            <Image
+              width={24}
+              height={24}
               src="./assets/home/inPainting.svg"
               alt="In Painting Icon"
               style={{ width: "30px", height: "30px" }}
@@ -302,28 +309,40 @@ export default function TextToImage() {
           <div className="card" key={index}>
             <div className="icons-down-star-trash">
               <div className="icons-down-star-trash-size">
-                <img
+                <Image
+                  width={24}
+                  height={24}
                   src="./assets/home/star.svg"
                   alt="like-icon"
                   draggable={false}
                 />
               </div>
               <div className="icons-down-star-trash-size">
-                <img
+                <Image
+                  width={24}
+                  height={24}
                   src="./assets/home/down.svg"
                   alt="download-icon"
                   draggable={false}
                 />
               </div>
               <div className="icons-down-star-trash-size">
-                <img
+                <Image
+                  width={24}
+                  height={24}
                   src="./assets/home/trash.svg"
                   alt="delete-icon"
                   draggable={false}
                 />
               </div>
             </div>
-            <img src={src} alt={`Image ${index + 1}`} draggable={false} />
+            <Image
+              width={256}
+              height={256}
+              src={src}
+              alt={`Image ${index + 1}`}
+              draggable={false}
+            />
           </div>
         ))}
       </div>

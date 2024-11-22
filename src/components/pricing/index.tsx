@@ -6,7 +6,7 @@ import "../home/css/pricing.css";
 export default function PricingPage() {
   const [activeButton, setActiveButton] = useState("Monthly");
 
-  const handleClick = (button: any) => {
+  const handleClick = (button: string) => {
     setActiveButton(button);
   };
   return (

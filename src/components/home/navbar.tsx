@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import MenuIcon from "@mui/icons-material/Menu";
 
 import "./css/navbar.css";
+import Image from "next/image";
 
 export default function Navbar() {
   const [isFixed, setIsFixed] = useState(false);
@@ -28,12 +28,13 @@ export default function Navbar() {
   return (
     <div className={`navbar-main ${isFixed ? "fixed" : ""}`}>
       <div className="yeongnam-logo-container">
-        {/* <MenuIcon className="menu-icon" /> */}
         <Link href={"/"}>
-          <img
+          <Image
             src="./assets/home/yeongnamLogo.svg"
             alt="Logo"
             draggable={false}
+            width={105}
+            height={40}
           />
         </Link>
       </div>
@@ -41,7 +42,9 @@ export default function Navbar() {
         <Link className="pricing-link" href={"/pricing"}>
           Pricing
         </Link>
-        <img
+        <Image
+          width={40}
+          height={40}
           src="./assets/home/userLogo.svg"
           alt="User Logo"
           className="user-logo"

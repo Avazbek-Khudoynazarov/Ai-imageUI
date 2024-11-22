@@ -1,11 +1,18 @@
 import React from "react";
 import "./css/footer.css";
+import Image from "next/image";
 
 export default function Footer() {
   return (
     <div className="main-footer">
       <div className="footer-logo">
-        <img src="./assets/home/yeongnamLogo.svg" alt="" draggable={false} />
+        <Image
+          width={105}
+          height={40}
+          src="./assets/home/yeongnamLogo.svg"
+          alt=""
+          draggable={false}
+        />
       </div>
       <span>
         대구본사 : 대구광역시 동구 동대구로 441(신천동 111번지) |

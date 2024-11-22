@@ -12,6 +12,7 @@ import { Box, Slider, Typography } from "@mui/material";
 import Link from "next/link";
 
 import "../home/css/textToImage.css";
+import Image from "next/image";
 
 export default function RemoveItem() {
   const pathname = usePathname();
@@ -57,7 +58,7 @@ export default function RemoveItem() {
       <div className="menu-nav-link">
         <div className={`from-text-page ${pathname === "/" ? "active" : ""}`}>
           <Link href="/" className="main-link-to-pages">
-            <img
+            <Image
               src="./assets/home/Tt.svg"
               alt="From Text Icon"
               draggable={false}
@@ -74,7 +75,7 @@ export default function RemoveItem() {
           }`}
         >
           <Link href="/from-image" className="main-link-to-pages">
-            <img
+            <Image
               src="./assets/home/fromImage.svg"
               alt="From Image Icon"
               draggable={false}
@@ -91,7 +92,7 @@ export default function RemoveItem() {
           }`}
         >
           <Link href="/in-painting" className="main-link-to-pages">
-            <img
+            <Image
               src="./assets/home/inPainting.svg"
               alt="In Painting Icon"
               style={{ width: "30px", height: "30px" }}
@@ -299,7 +300,7 @@ export default function RemoveItem() {
       >
         {imageSrc ? (
           <div className="image-preview">
-            <img
+            <Image
               src={imageSrc}
               alt="Uploaded"
               className="uploaded-image"
@@ -310,7 +311,7 @@ export default function RemoveItem() {
           <div className="upload-image">
             <span>CLICK TO ADD IMAGE</span>
             <button onClick={handleButtonClick}>
-              <img
+              <Image
                 src="./assets/fromImage/upload.svg"
                 alt="Upload icon"
                 draggable={false}

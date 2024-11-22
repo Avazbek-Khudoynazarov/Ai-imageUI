@@ -12,6 +12,7 @@ import { Box, Slider, Typography } from "@mui/material";
 import Link from "next/link";
 
 import "../home/css/textToImage.css";
+import Image from "next/image";
 
 export default function EditImage() {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -57,7 +58,9 @@ export default function EditImage() {
       <div className="menu-nav-link">
         <div className={`from-text-page ${pathname === "/" ? "active" : ""}`}>
           <Link href="/" className="main-link-to-pages">
-            <img
+            <Image
+              width={24}
+              height={24}
               src="./assets/home/Tt.svg"
               alt="From Text Icon"
               draggable={false}
@@ -74,7 +77,9 @@ export default function EditImage() {
           }`}
         >
           <Link href="/from-image" className="main-link-to-pages">
-            <img
+            <Image
+              width={24}
+              height={24}
               src="./assets/home/fromImage.svg"
               alt="From Image Icon"
               draggable={false}
@@ -91,7 +96,9 @@ export default function EditImage() {
           }`}
         >
           <Link href="/in-painting" className="main-link-to-pages">
-            <img
+            <Image
+              width={24}
+              height={24}
               src="./assets/home/inPainting.svg"
               alt="In Painting Icon"
               style={{ width: "30px", height: "30px" }}
@@ -299,7 +306,9 @@ export default function EditImage() {
       >
         {imageSrc ? (
           <div className="image-preview">
-            <img
+            <Image
+              width={700}
+              height={700}
               src={imageSrc}
               alt="Uploaded"
               className="uploaded-image"
@@ -310,7 +319,9 @@ export default function EditImage() {
           <div className="upload-image">
             <span>CLICK TO ADD IMAGE</span>
             <button onClick={handleButtonClick}>
-              <img
+              <Image
+                width={67}
+                height={67}
                 src="./assets/fromImage/upload.svg"
                 alt="Upload icon"
                 draggable={false}
