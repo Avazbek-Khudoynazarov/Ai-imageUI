@@ -170,6 +170,7 @@ export default function EditImage() {
                 "& textarea::placeholder": {
                   color: "#324B49",
                   fontWeight: 600,
+                  opacity: 100,
                 },
               },
             }}
@@ -200,6 +201,7 @@ export default function EditImage() {
                 "& textarea::placeholder": {
                   color: "#324B49",
                   fontWeight: 600,
+                  opacity: 100,
                 },
               },
             }}

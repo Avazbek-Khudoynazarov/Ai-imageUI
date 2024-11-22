@@ -153,6 +153,7 @@ export default function TextToImage() {
                 },
                 "& textarea::placeholder": {
                   color: "#324B49",
+                  opacity: 100,
                   fontWeight: 600,
                 },
               },
@@ -184,6 +185,7 @@ export default function TextToImage() {
                 "& textarea::placeholder": {
                   color: "#324B49",
                   fontWeight: 600,
+                  opacity: 100,
                 },
               },
             }}

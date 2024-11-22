@@ -170,6 +170,7 @@ export default function RemoveItem() {
                 "& textarea::placeholder": {
                   color: "#324B49",
                   fontWeight: 600,
+                  opacity: 100,
                 },
               },
             }}
@@ -199,6 +200,7 @@ export default function RemoveItem() {
                 },
                 "& textarea::placeholder": {
                   color: "#324B49",
+                  opacity: 100,
                   fontWeight: 600,
                 },
               },
