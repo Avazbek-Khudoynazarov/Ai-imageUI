@@ -167,6 +167,10 @@ export default function EditImage() {
                 "&.Mui-focused fieldset": {
                   borderColor: "transparent",
                 },
+                "& textarea::placeholder": {
+                  color: "#324B49",
+                  fontWeight: 600,
+                },
               },
             }}
           />
@@ -192,6 +196,10 @@ export default function EditImage() {
                 },
                 "&.Mui-focused fieldset": {
                   borderColor: "transparent",
+                },
+                "& textarea::placeholder": {
+                  color: "#324B49",
+                  fontWeight: 600,
                 },
               },
             }}

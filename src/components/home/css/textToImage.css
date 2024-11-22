@@ -49,6 +49,12 @@
   gap: 5px;
 }
 
+.main-link-to-pages span {
+  font-size: 15px;
+  font-weight: 600;
+  color: #051f1d;
+}
+
 .from-text-page.active {
   background-color: #cce8e4;
 }
