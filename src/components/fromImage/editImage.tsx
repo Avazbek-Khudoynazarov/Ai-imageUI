@@ -10,25 +10,22 @@ import ArrowDropDownRoundedIcon from "@mui/icons-material/ArrowDropDownRounded";
 import TextField from "@mui/material/TextField";
 import { Box, Slider, Typography } from "@mui/material";
 import Link from "next/link";
+import axios from "axios";
 
 import "../home/css/textToImage.css";
 import Image from "next/image";
 
 export default function EditImage() {
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const [imageSrc, setImageSrc] = useState<string | null>(null);
+  const [prompt, setPrompt] = useState<string>("");
+  const [width, setWidth] = useState<number>(1024);
+  const [height, setHeight] = useState<number>(1024);
+  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
   const pathname = usePathname();
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-  const [width, setWidth] = useState(0);
-  const [height, setHeight] = useState(0);
-
   const handleWidthChange = (event: Event, newValue: number | number[]) => {
     setWidth(newValue as number);
   };
@@ -36,6 +33,15 @@ export default function EditImage() {
   const handleHeightChange = (event: Event, newValue: number | number[]) => {
     setHeight(newValue as number);
   };
+
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
   const handleButtonClick = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
@@ -50,6 +56,63 @@ export default function EditImage() {
         setImageSrc(reader.result as string);
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleGenerateSVG = async () => {
+    if (!prompt) {
+      alert("Please enter a prompt!");
+      return;
+    }
+
+    if (!imageSrc) {
+      alert("Please upload an image to use as a background!");
+      return;
+    }
+
+    try {
+      const base64Image = imageSrc.replace(/^data:image\/[a-z]+;base64,/, "");
+
+      const payload = {
+        prompt: `${prompt}, hyper-realistic, ultra-detailed, photo-realistic, natural lighting, high resolution, accurate textures, professional photography, cinematic`,
+        negative_prompt:
+          "cartoon, anime, low quality, blurry, 3D render, unrealistic, painting",
+        styles: ["photorealistic"],
+        sampler_name: "Euler a",
+        batch_size: 1,
+        n_iter: 1,
+        steps: 100,
+        cfg_scale: 12,
+        width: width,
+        height: height,
+        init_images: [`data:image/png;base64,${base64Image}`],
+      };
+
+      setIsLoading(true);
+
+      const response = await axios.post(
+        "http://ai.yeongnam.com:7860/sdapi/v1/img2img",
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.data && response.data.images) {
+        setGeneratedImage(`data:image/png;base64,${response.data.images[0]}`);
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error("Error generating PNG:", error.message);
+        alert(`Failed to generate the PNG image. Error: ${error.message}`);
+      } else {
+        console.error("Unexpected error:", error);
+        alert("An unexpected error occurred. Please try again.");
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -180,11 +243,13 @@ export default function EditImage() {
           <span className="title-span-style">Negative Prompt</span>
           <TextField
             className="input-style-fix"
-            placeholder="e.g. A cat is sitting on a table"
+            placeholder="Describe the image (e.g., 'A cat next to a table')"
             variant="outlined"
             fullWidth
             multiline
-            minRows={3}
+            minRows={2}
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
             sx={{
               backgroundColor: "#d8f1f1",
               borderRadius: "8px",
@@ -225,8 +290,9 @@ export default function EditImage() {
                 <Slider
                   value={width}
                   onChange={handleWidthChange}
-                  min={0}
-                  max={2000}
+                  min={256}
+                  max={2048}
+                  step={256}
                   className="slider-size-style"
                   sx={{
                     color: "#2f7367",
@@ -264,8 +330,9 @@ export default function EditImage() {
                   <Slider
                     value={height}
                     onChange={handleHeightChange}
-                    min={0}
-                    max={2000}
+                    min={256}
+                    max={2048}
+                    step={256}
                     className="slider-size-style"
                     sx={{
                       color: "#2f7367",
@@ -302,7 +369,17 @@ export default function EditImage() {
           }}
           className="btn-create"
         >
-          <button>Create</button>
+          <Button
+            onClick={handleGenerateSVG}
+            variant="contained"
+            sx={{
+              backgroundColor: "#00504B",
+              color: "#fff",
+              marginTop: "20px",
+            }}
+          >
+            {isLoading ? "Generating..." : "Generate SVG"}
+          </Button>
           <button>2 credits will be charged</button>
         </div>
       </div>
@@ -315,7 +392,8 @@ export default function EditImage() {
         }}
       >
         {imageSrc ? (
-          <div className="image-preview">
+          <div className="image-preview" style={{ position: "relative" }}>
+            {/* Background Image */}
             <Image
               width={700}
               height={700}
@@ -323,7 +401,24 @@ export default function EditImage() {
               alt="Uploaded"
               className="uploaded-image"
               draggable={false}
+              style={{ position: "absolute", top: 0, left: 0, zIndex: 1 }}
             />
+            {/* Generated Image */}
+            {generatedImage && (
+              <Image
+                src={generatedImage}
+                alt="Generated Content"
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  zIndex: 2,
+                }}
+                width={700}
+                height={700}
+                draggable={false}
+              />
+            )}
           </div>
         ) : (
           <div className="upload-image">

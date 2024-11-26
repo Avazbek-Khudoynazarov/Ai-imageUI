@@ -85,6 +85,14 @@ export default function TextToImage() {
         payload
       );
       setImages(response.data.images);
+
+      setPrompt("");
+      setNegativePrompt("");
+      setWidth(512);
+      setHeight(512);
+      setSteps(70);
+      setCount(1);
+      setSelectedModel("Stable Diffusion XD 2.0");
     } catch (error) {
       console.error("Error generating image:", error);
       alert("Failed to generate images. Please try again.");
