@@ -68,11 +68,16 @@ export default function RemoveItem() {
         const rect = canvas.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
-        ctx.fillStyle = "black";
+        // console.log(`Drawing at: (${x}, ${y})`);
+        ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
         ctx.beginPath();
-        ctx.arc(x, y, 10, 0, Math.PI * 2);
+        ctx.arc(x, y, 10, 0, Math.PI * 10);
         ctx.fill();
+      } else {
+        console.error("Canvas context is not available.");
       }
+    } else {
+      console.error("Canvas element is not available.");
     }
   };
 
@@ -86,19 +91,20 @@ export default function RemoveItem() {
       .toDataURL("image/png")
       .replace(/^data:image\/[a-z]+;base64,/, "");
 
+    console.log("Mask Base64 String:", maskCanvas);
+
     try {
       const base64Image = imageSrc.replace(/^data:image\/[a-z]+;base64,/, "");
 
       const payload = {
         prompt: `${prompt}, hyper-realistic, ultra-detailed, photo-realistic, natural lighting, high resolution, accurate textures, professional photography, cinematic`,
         negative_prompt: "cartoon, blurry, 3D render, unrealistic",
+        sampler_name: "Euler a",
         width: width,
         height: height,
-        steps: 100,
+        steps: 50,
         cfg_scale: 12,
-        n_iter: 1,
         mask: maskCanvas,
-        mask_blur: 5,
         inpainting_fill: 1,
         inpaint_full_res: true,
         inpainting_mask_invert: 0,
@@ -121,7 +127,7 @@ export default function RemoveItem() {
       }
     } catch (error) {
       if (error instanceof Error) {
-        console.error("Error generating image:", error.message);
+        console.error("Error generating image:", error.message, error.stack);
         alert(
           `Failed to generate the image. Please try again. ${error.message}`
         );
