@@ -466,7 +466,9 @@ export default function RemoveItem() {
         )}
         {generatedImage && (
           <div>
-            <img
+            <Image
+              width={700}
+              height={700}
               src={generatedImage}
               alt="Generated"
               style={{ marginTop: "20px" }}
