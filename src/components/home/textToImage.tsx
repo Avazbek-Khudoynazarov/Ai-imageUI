@@ -24,7 +24,6 @@ export default function TextToImage() {
   const [count, setCount] = useState(1);
   const [selectedModel, setSelectedModel] = useState("Stable Diffusion XD 2.0");
 
-  const [steps, setSteps] = useState(70);
   const [images, setImages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const pathname = usePathname();
