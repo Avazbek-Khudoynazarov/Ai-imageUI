@@ -82,7 +82,6 @@ export default function TextToImage() {
       setNegativePrompt("");
       setWidth(512);
       setHeight(512);
-      setSteps(70);
       setCount(1);
       setSelectedModel("Stable Diffusion XD 2.0");
     } catch (error) {
