@@ -20,7 +20,6 @@ export default function RemoveItem() {
   const open = Boolean(anchorEl);
   const pathname = usePathname();
   const [imageSrc, setImageSrc] = useState<string | null>(null);
-  const [maskSrc, setMaskSrc] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [prompt, setPrompt] = useState<string>("");
