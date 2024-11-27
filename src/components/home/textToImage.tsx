@@ -11,8 +11,6 @@ import { Box, Slider, Typography } from "@mui/material";
 import Link from "next/link";
 import Fade from "@mui/material/Fade";
 
-import PopupState, { bindTrigger, bindMenu } from "material-ui-popup-state";
-
 import "./css/textToImage.css";
 import Image from "next/image";
 import axios from "axios";
@@ -50,10 +48,6 @@ export default function TextToImage() {
   };
   const handleCountChange = (event: Event, newValue: number | number[]) => {
     setCount(newValue as number);
-  };
-
-  const handleStepsChange = (event: Event, newValue: number | number[]) => {
-    setSteps(newValue as number);
   };
 
   const handleGenerateImage = async () => {
