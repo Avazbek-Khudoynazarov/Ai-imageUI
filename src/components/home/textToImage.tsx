@@ -21,8 +21,8 @@ export default function TextToImage() {
   const [prompt, setPrompt] = useState("");
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [negativePrompt, setNegativePrompt] = useState("");
-  const [width, setWidth] = useState(512);
-  const [height, setHeight] = useState(512);
+  const [width, setWidth] = useState(1024);
+  const [height, setHeight] = useState(1024);
   const [count, setCount] = useState(1);
   const [selectedModel, setSelectedModel] = useState("Stable Diffusion XD 2.0");
 
@@ -65,7 +65,6 @@ export default function TextToImage() {
     const payload = {
       prompt: `${prompt}, hyper-realistic, ultra-detailed, 8k resolution, photographic quality, highly realistic lighting, accurate textures, intricate details`,
       negative_prompt: `${negativePrompt}, cartoon, anime, blurry, 3d render, painting, unrealistic`,
-      styles: ["photorealistic"],
       sampler_name:
         selectedModel === "Stable Diffusion XL"
           ? "DPM++ SDE Karras"

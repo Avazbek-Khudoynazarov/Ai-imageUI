@@ -77,7 +77,6 @@ export default function EditImage() {
         prompt: `${prompt}, hyper-realistic, ultra-detailed, photo-realistic, natural lighting, high resolution, accurate textures, professional photography, cinematic`,
         negative_prompt:
           "cartoon, anime, low quality, blurry, 3D render, unrealistic, painting",
-        styles: ["photorealistic"],
         sampler_name: "Euler a",
         batch_size: 1,
         n_iter: 1,
@@ -378,7 +377,7 @@ export default function EditImage() {
               marginTop: "20px",
             }}
           >
-            {isLoading ? "Generating..." : "Generate SVG"}
+            {isLoading ? "Generating..." : "Generate"}
           </Button>
           <button>2 credits will be charged</button>
         </div>

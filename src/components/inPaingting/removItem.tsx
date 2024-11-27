@@ -10,24 +10,31 @@ import ArrowDropDownRoundedIcon from "@mui/icons-material/ArrowDropDownRounded";
 import TextField from "@mui/material/TextField";
 import { Box, Slider, Typography } from "@mui/material";
 import Link from "next/link";
+import axios from "axios";
 
 import "../home/css/textToImage.css";
 import Image from "next/image";
 
 export default function RemoveItem() {
-  const pathname = usePathname();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+  const pathname = usePathname();
   const [imageSrc, setImageSrc] = useState<string | null>(null);
+  const [maskSrc, setMaskSrc] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [prompt, setPrompt] = useState<string>("");
+  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [width, setWidth] = useState<number>(1024);
+  const [height, setHeight] = useState<number>(1024);
+
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
   const handleClose = () => {
     setAnchorEl(null);
   };
-  const [width, setWidth] = useState(0);
-  const [height, setHeight] = useState(0);
 
   const handleWidthChange = (event: Event, newValue: number | number[]) => {
     setWidth(newValue as number);
@@ -50,6 +57,80 @@ export default function RemoveItem() {
         setImageSrc(reader.result as string);
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCanvasDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        ctx.fillStyle = "black";
+        ctx.beginPath();
+        ctx.arc(x, y, 10, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  };
+
+  const handleGenerateImage = async () => {
+    if (!prompt || !imageSrc || !canvasRef.current) {
+      alert("Please upload an image, draw a mask, and enter a prompt!");
+      return;
+    }
+
+    const maskCanvas = canvasRef.current
+      .toDataURL("image/png")
+      .replace(/^data:image\/[a-z]+;base64,/, "");
+
+    try {
+      const base64Image = imageSrc.replace(/^data:image\/[a-z]+;base64,/, "");
+
+      const payload = {
+        prompt: `${prompt}, hyper-realistic, ultra-detailed, photo-realistic, natural lighting, high resolution, accurate textures, professional photography, cinematic`,
+        negative_prompt: "cartoon, blurry, 3D render, unrealistic",
+        width: width,
+        height: height,
+        steps: 100,
+        cfg_scale: 12,
+        n_iter: 1,
+        mask: maskCanvas,
+        mask_blur: 5,
+        inpainting_fill: 1,
+        inpaint_full_res: true,
+        inpainting_mask_invert: 0,
+        init_images: [`data:image/png;base64,${base64Image}`],
+      };
+
+      setIsLoading(true);
+
+      const response = await axios.post(
+        "http://ai.yeongnam.com:7860/sdapi/v1/img2img",
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (response.data && response.data.images) {
+        setGeneratedImage(`data:image/png;base64,${response.data.images[0]}`);
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error("Error generating image:", error.message);
+        alert(
+          `Failed to generate the image. Please try again. ${error.message}`
+        );
+      } else {
+        console.error("Unexpected error:", error);
+        alert("An unexpected error occurred. Please try again.");
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -149,11 +230,13 @@ export default function RemoveItem() {
           <span className="title-span-style">Prompt</span>
           <TextField
             className="input-style-fix"
-            placeholder="e.g. A cat is sitting on a table"
+            placeholder="Please Describe what to do"
             variant="outlined"
             fullWidth
             multiline
-            minRows={3}
+            minRows={2}
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
             sx={{
               backgroundColor: "#d8f1f1",
               borderRadius: "8px",
@@ -302,47 +385,85 @@ export default function RemoveItem() {
           }}
           className="btn-create"
         >
-          <button>Create</button>
+          <Button onClick={handleGenerateImage} disabled={isLoading}>
+            {isLoading ? "Processing..." : "Generate"}
+          </Button>
           <button>2 credits will be charged</button>
         </div>
       </div>
-      <div
-        className="image-board"
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        {imageSrc ? (
-          <div className="image-preview">
+      <div className="image-board" style={{ position: "relative" }}>
+        {imageSrc && (
+          <div
+            style={{
+              position: "relative",
+              width: "100%",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
             <Image
-              width={700}
-              height={700}
               src={imageSrc}
               alt="Uploaded"
-              className="uploaded-image"
-              draggable={false}
+              style={{
+                zIndex: 1,
+              }}
+              width={700}
+              height={700}
+            />
+            <canvas
+              ref={canvasRef}
+              width={700}
+              height={700}
+              style={{
+                position: "absolute",
+                top: "12%",
+                zIndex: 2,
+                backgroundColor: "transparent",
+              }}
+              onMouseDown={handleCanvasDrawing}
+              onMouseMove={(e) => {
+                if (e.buttons === 1) handleCanvasDrawing(e);
+              }}
             />
           </div>
-        ) : (
-          <div className="upload-image">
-            <span>CLICK TO ADD IMAGE</span>
-            <button onClick={handleButtonClick}>
-              <Image
-                width={67}
-                height={67}
-                src="./assets/fromImage/upload.svg"
-                alt="Upload icon"
-                draggable={false}
+        )}
+        {!imageSrc && (
+          <div
+            style={{
+              width: "100%",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <div className="upload-image">
+              <span>CLICK TO ADD IMAGE</span>
+              <button onClick={handleButtonClick}>
+                <Image
+                  width={67}
+                  height={67}
+                  src="./assets/fromImage/upload.svg"
+                  alt="Upload icon"
+                  draggable={false}
+                />
+              </button>
+              <input
+                type="file"
+                ref={fileInputRef}
+                style={{ display: "none" }}
+                onChange={handleFileChange}
+                accept="image/*"
               />
-            </button>
-            <input
-              type="file"
-              ref={fileInputRef}
-              style={{ display: "none" }}
-              onChange={handleFileChange}
-              accept="image/*"
+            </div>
+          </div>
+        )}
+        {generatedImage && (
+          <div>
+            <img
+              src={generatedImage}
+              alt="Generated"
+              style={{ marginTop: "20px" }}
             />
           </div>
         )}
