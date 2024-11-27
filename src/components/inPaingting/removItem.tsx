@@ -113,7 +113,7 @@ export default function RemoveItem() {
       setIsLoading(true);
 
       const response = await axios.post(
-        "https://ai.yeongnam.com:7860/sdapi/v1/img2img",
+        "http://ai.yeongnam.com:7860/sdapi/v1/img2img",
         payload,
         {
           headers: {
