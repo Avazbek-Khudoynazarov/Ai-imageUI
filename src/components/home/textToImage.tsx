@@ -73,7 +73,7 @@ export default function TextToImage() {
     try {
       setIsLoading(true);
       const response = await axios.post(
-        "http://ai.yeongnam.com:7860/sdapi/v1/txt2img",
+        "https://ai.yeongnam.com:7860/sdapi/v1/txt2img",
         payload
       );
       setImages(response.data.images);
