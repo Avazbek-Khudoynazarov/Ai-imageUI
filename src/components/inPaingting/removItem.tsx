@@ -3,17 +3,16 @@
 import React, { useState, useRef } from "react";
 import { usePathname } from "next/navigation";
 import Button from "@mui/material/Button";
-import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
-import Fade from "@mui/material/Fade";
-import ArrowDropDownRoundedIcon from "@mui/icons-material/ArrowDropDownRounded";
 import TextField from "@mui/material/TextField";
-import { Box, Slider, Typography } from "@mui/material";
-import Link from "next/link";
 import axios from "axios";
+import Image from "next/image";
+import Link from "next/link";
+import ArrowDropDownRoundedIcon from "@mui/icons-material/ArrowDropDownRounded";
+import Menu from "@mui/material/Menu";
+import Fade from "@mui/material/Fade";
+import MenuItem from "@mui/material/MenuItem";
 
 import "../home/css/textToImage.css";
-import Image from "next/image";
 
 export default function RemoveItem() {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -28,6 +27,11 @@ export default function RemoveItem() {
   const [width, setWidth] = useState<number>(1024);
   const [height, setHeight] = useState<number>(1024);
 
+  const handleButtonClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -35,25 +39,31 @@ export default function RemoveItem() {
     setAnchorEl(null);
   };
 
-  const handleWidthChange = (event: Event, newValue: number | number[]) => {
-    setWidth(newValue as number);
-  };
-
-  const handleHeightChange = (event: Event, newValue: number | number[]) => {
-    setHeight(newValue as number);
-  };
-  const handleButtonClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
-
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImageSrc(reader.result as string);
+        const imgElement = new window.Image();
+        imgElement.src = reader.result as string;
+        imgElement.onload = () => {
+          if (canvasRef.current) {
+            canvasRef.current.width = imgElement.naturalWidth;
+            canvasRef.current.height = imgElement.naturalHeight;
+            const ctx = canvasRef.current.getContext("2d");
+            if (ctx) {
+              ctx.clearRect(
+                0,
+                0,
+                imgElement.naturalWidth,
+                imgElement.naturalHeight
+              );
+            }
+          }
+          setWidth(imgElement.naturalWidth);
+          setHeight(imgElement.naturalHeight);
+          setImageSrc(reader.result as string);
+        };
       };
       reader.readAsDataURL(file);
     }
@@ -67,17 +77,39 @@ export default function RemoveItem() {
         const rect = canvas.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
-        // console.log(`Drawing at: (${x}, ${y})`);
-        ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+        console.log(`Drawing at: (${x}, ${y})`);
+        ctx.fillStyle = "rgba(255, 255, 255, 1)";
         ctx.beginPath();
-        ctx.arc(x, y, 10, 0, Math.PI * 10);
+        ctx.arc(x, y, 10, 0, Math.PI * 2);
         ctx.fill();
-      } else {
-        console.error("Canvas context is not available.");
       }
-    } else {
-      console.error("Canvas element is not available.");
     }
+  };
+
+  const processMaskCanvas = (canvas: any) => {
+    const ctx = canvas.getContext("2d");
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+
+    for (let i = 0; i < data.length; i += 4) {
+      const [r, g, b, a] = data.slice(i, i + 4);
+
+      if (r > 0 || g > 0 || b > 0) {
+        data[i] = 255; // R
+        data[i + 1] = 255; // G
+        data[i + 2] = 255; // B
+        data[i + 3] = 255; // A
+      } else {
+        data[i] = 0;
+        data[i + 1] = 0;
+        data[i + 2] = 0;
+        data[i + 3] = 0;
+      }
+    }
+    ctx.putImageData(imageData, 0, 0);
+    return canvas
+      .toDataURL("image/png")
+      .replace(/^data:image\/[a-z]+;base64,/, "");
   };
 
   const handleGenerateImage = async () => {
@@ -86,32 +118,23 @@ export default function RemoveItem() {
       return;
     }
 
-    const maskCanvas = canvasRef.current
-      .toDataURL("image/png")
-      .replace(/^data:image\/[a-z]+;base64,/, "");
-
-    console.log("Mask Base64 String:", maskCanvas);
+    const maskCanvas = processMaskCanvas(canvasRef.current);
 
     try {
       const base64Image = imageSrc.replace(/^data:image\/[a-z]+;base64,/, "");
 
       const payload = {
-        prompt: `${prompt}, hyper-realistic, ultra-detailed, photo-realistic, natural lighting, high resolution, accurate textures, professional photography, cinematic`,
-        negative_prompt: "cartoon, blurry, 3D render, unrealistic",
+        prompt,
+        mask: `data:image/png;base64,${maskCanvas}`,
+        init_images: [`data:image/png;base64,${base64Image}`],
+        width,
+        height,
         sampler_name: "Euler a",
-        width: width,
-        height: height,
         steps: 50,
         cfg_scale: 12,
-        mask: maskCanvas,
-        inpainting_fill: 1,
-        inpaint_full_res: true,
-        inpainting_mask_invert: 0,
-        init_images: [`data:image/png;base64,${base64Image}`],
       };
 
       setIsLoading(true);
-
       const response = await axios.post(
         "http://ai.yeongnam.com:7860/sdapi/v1/img2img",
         payload,
@@ -121,19 +144,14 @@ export default function RemoveItem() {
           },
         }
       );
+
       if (response.data && response.data.images) {
         setGeneratedImage(`data:image/png;base64,${response.data.images[0]}`);
+        setImageSrc(null);
       }
     } catch (error) {
-      if (error instanceof Error) {
-        console.error("Error generating image:", error.message, error.stack);
-        alert(
-          `Failed to generate the image. Please try again. ${error.message}`
-        );
-      } else {
-        console.error("Unexpected error:", error);
-        alert("An unexpected error occurred. Please try again.");
-      }
+      console.error("Error generating image:", error);
+      alert("Failed to generate the image. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -210,7 +228,7 @@ export default function RemoveItem() {
             aria-expanded={open ? "true" : undefined}
             onClick={handleClick}
           >
-            Stable Diffusion XD 2.0{" "}
+            Stable Diffusion XD 2.0
             <ArrowDropDownRoundedIcon
               fontSize="large"
               sx={{ color: "#00504B" }}
@@ -295,92 +313,6 @@ export default function RemoveItem() {
             }}
           />
         </div>
-        <div className="slider-image-size">
-          <span className="title-span-style">Output Size</span>
-          <Box className="main-slider-image">
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 15,
-                marginBottom: "15px",
-              }}
-            >
-              <Typography variant="body1" sx={{ paddingRight: "5px" }}>
-                Width
-              </Typography>
-              <div>
-                <Slider
-                  value={width}
-                  onChange={handleWidthChange}
-                  min={0}
-                  max={2000}
-                  className="slider-size-style"
-                  sx={{
-                    color: "#2f7367",
-                    "& .MuiSlider-track": {
-                      height: 16,
-                      borderRadius: 4,
-                    },
-                    "& .MuiSlider-rail": {
-                      height: 16,
-                      borderRadius: 4,
-                      backgroundColor: "#bbd5d1",
-                    },
-                    "& .MuiSlider-thumb": {
-                      zIndex: 99,
-                    },
-                  }}
-                />
-              </div>
-              <Box className="slider-size-displayer">
-                <span>{width}</span>
-                <span>px</span>
-              </Box>
-            </div>
-            <Box className="main-slider-image">
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 15,
-                  marginBottom: "15px",
-                }}
-              >
-                <Typography variant="body1">Height</Typography>
-                <div>
-                  <Slider
-                    value={height}
-                    onChange={handleHeightChange}
-                    min={0}
-                    max={2000}
-                    className="slider-size-style"
-                    sx={{
-                      color: "#2f7367",
-                      "& .MuiSlider-track": {
-                        height: 16,
-                        borderRadius: 4,
-                      },
-                      "& .MuiSlider-rail": {
-                        height: 16,
-                        borderRadius: 4,
-                        backgroundColor: "#bbd5d1",
-                      },
-                      "& .MuiSlider-thumb": {
-                        zIndex: 99,
-                      },
-                    }}
-                  />
-                </div>
-                <Box className="slider-size-displayer">
-                  {" "}
-                  <span>{height}</span>
-                  <span>px</span>
-                </Box>
-              </div>
-            </Box>
-          </Box>
-        </div>
 
         <div
           style={{
@@ -415,16 +347,17 @@ export default function RemoveItem() {
               }}
               width={700}
               height={700}
+              objectFit="100%"
             />
             <canvas
               ref={canvasRef}
-              width={700}
-              height={700}
+              width={width}
+              height={height}
               style={{
                 position: "absolute",
-                top: "12%",
                 zIndex: 2,
                 backgroundColor: "transparent",
+                border: "2px solid yellow",
               }}
               onMouseDown={handleCanvasDrawing}
               onMouseMove={(e) => {
@@ -464,15 +397,16 @@ export default function RemoveItem() {
           </div>
         )}
         {generatedImage && (
-          <div>
-            <Image
-              width={700}
-              height={700}
-              src={generatedImage}
-              alt="Generated"
-              style={{ marginTop: "20px" }}
-            />
-          </div>
+          <Image
+            src={generatedImage}
+            alt="Generated Image"
+            width={700} // Use the width from the state
+            height={700} // Use the height from the state
+            style={{
+              marginTop: "20px",
+            }}
+            objectFit="100%"
+          />
         )}
       </div>
     </div>
