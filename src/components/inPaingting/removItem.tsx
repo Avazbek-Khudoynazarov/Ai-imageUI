@@ -142,7 +142,7 @@ export default function RemoveItem() {
 
       setIsLoading(true);
       const response = await axios.post(
-        "http://ai.yeongnam.com:7860/sdapi/v1/img2img",
+        "https://ai.yeongnam.com/sdapi/v1/img2img",
         payload,
         {
           headers: {
@@ -357,13 +357,12 @@ export default function RemoveItem() {
             />
             <canvas
               ref={canvasRef}
-              width={width}
-              height={height}
+              width={700}
+              height={700}
               style={{
                 position: "absolute",
                 zIndex: 2,
                 backgroundColor: "transparent",
-                border: "2px solid yellow",
               }}
               onMouseDown={handleCanvasDrawing}
               onMouseMove={(e) => {
