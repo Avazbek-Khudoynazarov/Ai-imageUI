@@ -86,27 +86,33 @@ export default function RemoveItem() {
     }
   };
 
-  const processMaskCanvas = (canvas: any) => {
+  const processMaskCanvas = (canvas: HTMLCanvasElement): string => {
     const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      throw new Error("Failed to get 2D context from canvas.");
+    }
+
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const data = imageData.data;
 
     for (let i = 0; i < data.length; i += 4) {
-      const [r, g, b, a] = data.slice(i, i + 4);
+      const [r, g, b] = data.slice(i, i + 3);
 
       if (r > 0 || g > 0 || b > 0) {
-        data[i] = 255; // R
-        data[i + 1] = 255; // G
-        data[i + 2] = 255; // B
-        data[i + 3] = 255; // A
+        data[i] = 255; // Red
+        data[i + 1] = 255; // Green
+        data[i + 2] = 255; // Blue
+        data[i + 3] = 255; // Alpha
       } else {
         data[i] = 0;
         data[i + 1] = 0;
         data[i + 2] = 0;
-        data[i + 3] = 0;
+        data[i + 3] = 0; // Fully transparent
       }
     }
+
     ctx.putImageData(imageData, 0, 0);
+
     return canvas
       .toDataURL("image/png")
       .replace(/^data:image\/[a-z]+;base64,/, "");
