@@ -64,7 +64,7 @@ export default function TextToImage() {
           : "DPM++ 2M Karras",
       width: width,
       height: height,
-      steps: 100,
+      steps: 30,
       cfg_scale: 8,
       n_iter: count,
       batch_size: 1,

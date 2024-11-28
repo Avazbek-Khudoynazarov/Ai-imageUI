@@ -79,7 +79,7 @@ export default function EditImage() {
           "cartoon, anime, low quality, blurry, 3D render, unrealistic, painting",
         batch_size: 1,
         n_iter: 1,
-        steps: 100,
+        steps: 30,
         cfg_scale: 12,
         width: width,
         height: height,
