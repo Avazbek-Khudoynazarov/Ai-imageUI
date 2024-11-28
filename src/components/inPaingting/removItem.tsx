@@ -355,8 +355,8 @@ export default function RemoveItem() {
             />
             <canvas
               ref={canvasRef}
-              width={700}
-              height={700}
+              width={width}
+              height={height}
               style={{
                 position: "absolute",
                 zIndex: 2,
