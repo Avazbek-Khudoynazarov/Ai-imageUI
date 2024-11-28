@@ -22,7 +22,7 @@ export default function TextToImage() {
   const [width, setWidth] = useState(1024);
   const [height, setHeight] = useState(1024);
   const [count, setCount] = useState(1);
-  const [selectedModel, setSelectedModel] = useState("Stable Diffusion XD 2.0");
+  const [selectedModel, setSelectedModel] = useState("Stable Diffusion XL");
 
   const [images, setImages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -49,6 +49,9 @@ export default function TextToImage() {
     setCount(newValue as number);
   };
 
+  const handleDelete = (index: number) => {
+    setImages((prevImages) => prevImages.filter((_, i) => i !== index));
+  };
   const handleGenerateImage = async () => {
     if (!prompt) {
       alert("Please enter a prompt!");
@@ -80,10 +83,10 @@ export default function TextToImage() {
 
       setPrompt("");
       setNegativePrompt("");
-      setWidth(512);
-      setHeight(512);
+      setWidth(1024);
+      setHeight(1024);
       setCount(1);
-      setSelectedModel("Stable Diffusion XD 2.0");
+      setSelectedModel("Stable Diffusion XL");
     } catch (error) {
       console.error("Error generating image:", error);
       alert("Failed to generate images. Please try again.");
@@ -191,35 +194,11 @@ export default function TextToImage() {
           >
             <MenuItem
               onClick={() => {
-                setSelectedModel("Stable Diffusion XD 2.0");
-                handleClose();
-              }}
-            >
-              Stable Diffusion XD 2.0
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
                 setSelectedModel("Stable Diffusion XL");
                 handleClose();
               }}
             >
               Stable Diffusion XL
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                setSelectedModel("Stable Diffusion Lite");
-                handleClose();
-              }}
-            >
-              Stable Diffusion Lite
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                setSelectedModel("Custom Model");
-                handleClose();
-              }}
-            >
-              Custom Model
             </MenuItem>
           </Menu>
         </div>
@@ -470,7 +449,10 @@ export default function TextToImage() {
                   className="icon"
                 />
               </div>
-              <div className="icons-down-star-trash-size">
+              <div
+                onClick={() => handleDelete(index)}
+                className="icons-down-star-trash-size"
+              >
                 <Image
                   src="/assets/home/trash.svg"
                   alt="trash icon"

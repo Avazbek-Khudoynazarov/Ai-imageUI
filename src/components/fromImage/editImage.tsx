@@ -25,6 +25,7 @@ export default function EditImage() {
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [selectedModel, setSelectedModel] = useState("Stable Diffusion XL");
   const pathname = usePathname();
   const handleWidthChange = (event: Event, newValue: number | number[]) => {
     setWidth(newValue as number);
@@ -77,6 +78,10 @@ export default function EditImage() {
         prompt: `${prompt}, hyper-realistic, ultra-detailed, photo-realistic, natural lighting, high resolution, accurate textures, professional photography, cinematic`,
         negative_prompt:
           "cartoon, anime, low quality, blurry, 3D render, unrealistic, painting",
+        sampler_name:
+          selectedModel === "Stable Diffusion XL"
+            ? "DPM++ SDE Karras"
+            : "DPM++ 2M Karras",
         batch_size: 1,
         n_iter: 1,
         steps: 30,
@@ -101,6 +106,9 @@ export default function EditImage() {
       if (response.data && response.data.images) {
         setGeneratedImage(`data:image/png;base64,${response.data.images[0]}`);
       }
+      setSelectedModel("Stable Diffusion XL");
+      setWidth(1024);
+      setHeight(1024);
     } catch (error) {
       if (error instanceof Error) {
         console.error("Error generating PNG:", error.message);
@@ -178,14 +186,14 @@ export default function EditImage() {
         <div className="model-menu-position">
           <span className="title-span-style">Model</span>
           <Button
-            className=" menu-btn-style"
+            className="menu-btn-style"
             id="fade-button"
             aria-controls={open ? "fade-menu" : undefined}
             aria-haspopup="true"
             aria-expanded={open ? "true" : undefined}
             onClick={handleClick}
           >
-            Stable Diffusion XD 2.0{" "}
+            {selectedModel}{" "}
             <ArrowDropDownRoundedIcon
               fontSize="large"
               sx={{ color: "#00504B" }}
@@ -201,20 +209,27 @@ export default function EditImage() {
             onClose={handleClose}
             TransitionComponent={Fade}
           >
-            <MenuItem onClick={handleClose}>Profile</MenuItem>
-            <MenuItem onClick={handleClose}>My account</MenuItem>
-            <MenuItem onClick={handleClose}>Logout</MenuItem>
+            <MenuItem
+              onClick={() => {
+                setSelectedModel("Stable Diffusion XL");
+                handleClose();
+              }}
+            >
+              Stable Diffusion XL
+            </MenuItem>
           </Menu>
         </div>
         <div className="prompt-input">
           <span className="title-span-style">Prompt</span>
           <TextField
             className="input-style-fix"
-            placeholder="e.g. A cat is sitting on a table"
+            placeholder="Describe the image (e.g., 'A cat next to a table')"
             variant="outlined"
             fullWidth
             multiline
-            minRows={3}
+            minRows={2}
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
             sx={{
               backgroundColor: "#d8f1f1",
               borderRadius: "8px",
@@ -241,13 +256,11 @@ export default function EditImage() {
           <span className="title-span-style">Negative Prompt</span>
           <TextField
             className="input-style-fix"
-            placeholder="Describe the image (e.g., 'A cat next to a table')"
+            placeholder="Negative Prompt"
             variant="outlined"
             fullWidth
             multiline
-            minRows={2}
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
+            minRows={3}
             sx={{
               backgroundColor: "#d8f1f1",
               borderRadius: "8px",

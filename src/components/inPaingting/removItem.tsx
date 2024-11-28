@@ -133,10 +133,8 @@ export default function RemoveItem() {
         prompt,
         mask: `data:image/png;base64,${maskCanvas}`,
         init_images: [`data:image/png;base64,${base64Image}`],
-        width,
-        height,
-        sampler_name: "Euler a",
-        steps: 50,
+
+        steps: 30,
         cfg_scale: 12,
       };
 
