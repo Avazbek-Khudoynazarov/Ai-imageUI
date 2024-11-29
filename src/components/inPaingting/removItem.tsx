@@ -24,8 +24,6 @@ export default function RemoveItem() {
   const [prompt, setPrompt] = useState<string>("");
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [width, setWidth] = useState<number>(1024);
-  const [height, setHeight] = useState<number>(1024);
   const canvasWidth = 700;
   const canvasHeight = 700;
 
