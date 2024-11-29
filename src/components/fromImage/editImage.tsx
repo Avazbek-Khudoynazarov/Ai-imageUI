@@ -422,6 +422,7 @@ export default function EditImage() {
                   left: 0,
                   zIndex: 2,
                 }}
+                objectFit={"contain"}
                 width={700}
                 height={700}
                 draggable={false}
