@@ -359,11 +359,11 @@
 
 .closeIcon-image {
   position: absolute;
-  width: 35;
-  height: 35;
+  width: 35px;
+  height: 35px;
 
-  top: 5;
-  right: 5;
+  top: 5px;
+  right: 5px;
   border-radius: 10px;
 
   display: flex;
