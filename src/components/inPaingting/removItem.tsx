@@ -26,6 +26,8 @@ export default function RemoveItem() {
   const [isLoading, setIsLoading] = useState(false);
   const [width, setWidth] = useState<number>(1024);
   const [height, setHeight] = useState<number>(1024);
+  const canvasWidth = 700;
+  const canvasHeight = 700;
 
   const handleButtonClick = () => {
     if (fileInputRef.current) {
@@ -47,21 +49,37 @@ export default function RemoveItem() {
         const imgElement = new window.Image();
         imgElement.src = reader.result as string;
         imgElement.onload = () => {
+          const aspectRatio =
+            imgElement.naturalWidth / imgElement.naturalHeight;
+
+          let targetWidth = canvasWidth;
+          let targetHeight = canvasHeight;
+
+          if (aspectRatio > 1) {
+            targetHeight = Math.round(canvasWidth / aspectRatio);
+          } else {
+            targetWidth = Math.round(canvasHeight * aspectRatio);
+          }
+
           if (canvasRef.current) {
-            canvasRef.current.width = imgElement.naturalWidth;
-            canvasRef.current.height = imgElement.naturalHeight;
-            const ctx = canvasRef.current.getContext("2d");
+            const canvas = canvasRef.current;
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+            const ctx = canvas.getContext("2d");
+
             if (ctx) {
-              ctx.clearRect(
-                0,
-                0,
-                imgElement.naturalWidth,
-                imgElement.naturalHeight
+              ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+              const offsetX = (canvasWidth - targetWidth) / 2;
+              const offsetY = (canvasHeight - targetHeight) / 2;
+              ctx.drawImage(
+                imgElement,
+                offsetX,
+                offsetY,
+                targetWidth,
+                targetHeight
               );
             }
           }
-          setWidth(imgElement.naturalWidth);
-          setHeight(imgElement.naturalHeight);
           setImageSrc(reader.result as string);
         };
       };
@@ -99,15 +117,15 @@ export default function RemoveItem() {
       const [r, g, b] = data.slice(i, i + 3);
 
       if (r > 0 || g > 0 || b > 0) {
-        data[i] = 255; // Red
-        data[i + 1] = 255; // Green
-        data[i + 2] = 255; // Blue
-        data[i + 3] = 255; // Alpha
+        data[i] = 255;
+        data[i + 1] = 255;
+        data[i + 2] = 255;
+        data[i + 3] = 255;
       } else {
         data[i] = 0;
         data[i + 1] = 0;
         data[i + 2] = 0;
-        data[i + 3] = 0; // Fully transparent
+        data[i + 3] = 0;
       }
     }
 
@@ -130,7 +148,7 @@ export default function RemoveItem() {
       const base64Image = imageSrc.replace(/^data:image\/[a-z]+;base64,/, "");
 
       const payload = {
-        prompt,
+        prompt: "A description of the image",
         mask: `data:image/png;base64,${maskCanvas}`,
         init_images: [`data:image/png;base64,${base64Image}`],
 
@@ -140,7 +158,7 @@ export default function RemoveItem() {
 
       setIsLoading(true);
       const response = await axios.post(
-        "https://ai.yeongnam.com/sdapi/v1/img2img",
+        "http://ai.yeongnam.com:7860/sdapi/v1/img2img",
         payload,
         {
           headers: {
@@ -355,8 +373,8 @@ export default function RemoveItem() {
             />
             <canvas
               ref={canvasRef}
-              width={width}
-              height={height}
+              width={canvasWidth}
+              height={canvasHeight}
               style={{
                 position: "absolute",
                 zIndex: 2,
