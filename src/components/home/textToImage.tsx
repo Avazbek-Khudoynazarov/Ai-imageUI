@@ -10,6 +10,8 @@ import TextField from "@mui/material/TextField";
 import { Box, Slider, Typography } from "@mui/material";
 import Link from "next/link";
 import Fade from "@mui/material/Fade";
+import Modal from "@mui/material/Modal";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 
 import "./css/textToImage.css";
 import Image from "next/image";
@@ -23,6 +25,7 @@ export default function TextToImage() {
   const [height, setHeight] = useState(1024);
   const [count, setCount] = useState(1);
   const [selectedModel, setSelectedModel] = useState("Stable Diffusion XL");
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const [images, setImages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -34,6 +37,16 @@ export default function TextToImage() {
 
   const handleClose = () => {
     setAnchorEl(null);
+  };
+  const [open2, setOpen2] = useState(false);
+
+  const handleOpen = (src: string) => {
+    setSelectedImage(src);
+    setOpen2(true);
+  };
+  const handleClose2 = () => {
+    setOpen2(false);
+    setSelectedImage(null);
   };
 
   console.log("Current Pathname:", pathname);
@@ -61,10 +74,7 @@ export default function TextToImage() {
     const payload = {
       prompt: `${prompt}, hyper-realistic, ultra-detailed, 8k resolution, photographic quality, highly realistic lighting, accurate textures, intricate details`,
       negative_prompt: `${negativePrompt}, cartoon, anime, blurry, 3d render, painting, unrealistic`,
-      sampler_name:
-        selectedModel === "Stable Diffusion XL"
-          ? "DPM++ SDE Karras"
-          : "DPM++ 2M Karras",
+      sampler_name: "DPM++ SDE Karras",
       width: width,
       height: height,
       steps: 30,
@@ -77,14 +87,19 @@ export default function TextToImage() {
       setIsLoading(true);
       const response = await axios.post(
         "https://ai.yeongnam.com/sdapi/v1/txt2img",
-        payload
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json; charset=utf-8",
+          },
+        }
       );
       setImages(response.data.images);
 
       setPrompt("");
       setNegativePrompt("");
-      setWidth(512);
-      setHeight(512);
+      setWidth(1024);
+      setHeight(1024);
       setCount(1);
       setSelectedModel("Stable Diffusion XL");
     } catch (error) {
@@ -416,17 +431,75 @@ export default function TextToImage() {
       </div>
       <div className="image-board">
         {images.map((src, index) => (
-          <div className="card" key={index}>
+          <div className="card" key={index} onClick={() => handleOpen(src)}>
             <Image
               width={256}
               height={256}
               src={`data:image/png;base64,${src}`}
               alt={`Generated Image ${index + 1}`}
               draggable={false}
+              objectFit="contain"
             />
 
+            <Modal
+              open={open2}
+              onClose={handleClose2}
+              closeAfterTransition
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                backdropFilter: "blur(5px)",
+                backgroundColor: "rgba(0, 0, 0, 0.5)",
+              }}
+            >
+              <Box
+                onClick={handleClose2}
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  position: "relative",
+                  width: "100%",
+                  height: "100%",
+                }}
+              >
+                <Box
+                  onClick={(e) => e.stopPropagation()}
+                  sx={{
+                    width: 600,
+                    height: 600,
+                    bgcolor: "transparent",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    position: "relative",
+                  }}
+                >
+                  {selectedImage && (
+                    <Image
+                      src={`data:image/png;base64,${selectedImage}`}
+                      alt="Enlarged Image"
+                      width={600}
+                      height={600}
+                      draggable={false}
+                      objectFit="contain"
+                      style={{ borderRadius: 10 }}
+                    />
+                  )}
+                  <div className="closeIcon-image" onClick={handleClose2}>
+                    <CloseRoundedIcon fontSize="medium" />
+                  </div>
+                </Box>
+              </Box>
+            </Modal>
             <div className="icon-container">
-              <div className="icons-down-star-trash-size">
+              <div
+                className="icons-down-star-trash-size"
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+              >
                 <Image
                   src="/assets/home/star.svg"
                   alt="star icon"
@@ -437,7 +510,10 @@ export default function TextToImage() {
                 />
               </div>
               <div
-                onClick={() => handleDownload(src, index)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDownload(src, index);
+                }}
                 className="icons-down-star-trash-size"
               >
                 <Image
@@ -450,7 +526,10 @@ export default function TextToImage() {
                 />
               </div>
               <div
-                onClick={() => handleDelete(index)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDelete(index);
+                }}
                 className="icons-down-star-trash-size"
               >
                 <Image

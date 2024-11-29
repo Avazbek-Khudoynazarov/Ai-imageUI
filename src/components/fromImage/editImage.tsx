@@ -78,10 +78,7 @@ export default function EditImage() {
         prompt: `${prompt}, hyper-realistic, ultra-detailed, photo-realistic, natural lighting, high resolution, accurate textures, professional photography, cinematic`,
         negative_prompt:
           "cartoon, anime, low quality, blurry, 3D render, unrealistic, painting",
-        sampler_name:
-          selectedModel === "Stable Diffusion XL"
-            ? "DPM++ SDE Karras"
-            : "DPM++ 2M Karras",
+        sampler_name: "DPM++ SDE Karras",
         batch_size: 1,
         n_iter: 1,
         steps: 30,

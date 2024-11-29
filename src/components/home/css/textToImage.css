@@ -282,6 +282,7 @@
   border-radius: 30px;
   overflow: hidden;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
 }
 .card:hover .icon-container {
   display: flex;
@@ -294,25 +295,14 @@
   display: none;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   z-index: 2;
-  transform: translateY(-10px); /* Slightly above the center */
+  transform: translateY(-10px);
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
 .icon {
   background-color: none;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  cursor: pointer;
-}
-
-.icons-down-star-trash {
-  position: absolute;
-  display: flex;
-  flex-direction: column;
-  right: 0;
-  padding: 8px 8px;
-  gap: 6px;
-  z-index: 999;
 }
 
 .icons-down-star-trash-size {
@@ -365,6 +355,33 @@
   width: 700px;
   height: 700px;
   overflow: hidden;
+}
+
+.closeIcon-image {
+  position: absolute;
+  width: 35;
+  height: 35;
+
+  top: 5;
+  right: 5;
+  border-radius: 10px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #ffffffd1;
+  cursor: pointer;
+
+  transition: transform 0.3s ease, background-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.closeIcon-image:hover {
+  transform: scale(1.1);
+
+  background: #ffffff;
+
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .uploaded-image {

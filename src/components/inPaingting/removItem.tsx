@@ -342,7 +342,7 @@ export default function RemoveItem() {
           }}
           className="btn-create"
         >
-          <Button onClick={handleGenerateImage} disabled={isLoading}>
+          <Button onClick={handleGenerateImage} variant="contained">
             {isLoading ? "Processing..." : "Generate"}
           </Button>
           <button>2 credits will be charged</button>
