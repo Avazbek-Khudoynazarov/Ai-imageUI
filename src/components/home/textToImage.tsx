@@ -38,6 +38,8 @@ export default function TextToImage() {
 
   const handleClose = () => {
     setAnchorEl(null);
+    isTranslating;
+    translatePrompt;
   };
   const [open2, setOpen2] = useState(false);
 
