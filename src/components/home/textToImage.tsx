@@ -44,6 +44,7 @@ export default function TextToImage() {
   const handleOpen = (src: string) => {
     setSelectedImage(src);
     setOpen2(true);
+    translatedPrompt;
   };
   const handleClose2 = () => {
     setOpen2(false);
