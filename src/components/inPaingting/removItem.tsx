@@ -27,6 +27,7 @@ export default function RemoveItem() {
   const [isDrawing, setIsDrawing] = useState(false);
   const [originalWidth, setOriginalWidth] = useState<number | null>(null);
   const [originalHeight, setOriginalHeight] = useState<number | null>(null);
+  const [selectedModel, setSelectedModel] = useState("Stable Diffusion XL");
 
   const handleButtonClick = () => {
     if (fileInputRef.current) {
@@ -121,14 +122,14 @@ export default function RemoveItem() {
         prompt: "A description of the image",
         mask: `data:image/png;base64,${maskCanvas}`,
         init_images: [`data:image/png;base64,${base64Image}`],
-
+        sampler_name: "DPM++ SDE Karras",
         steps: 30,
         cfg_scale: 12,
       };
 
       setIsLoading(true);
       const response = await axios.post(
-        "https://ai.yeongnam.com/sdapi/v1/img2img",
+        "http://ai.yeongnam.com:7860/sdapi/v1/img2img",
         payload,
         {
           headers: {
@@ -141,6 +142,7 @@ export default function RemoveItem() {
         setGeneratedImage(`data:image/png;base64,${response.data.images[0]}`);
         setImageSrc(null);
       }
+      setSelectedModel("Stable Diffusion XL");
     } catch (error) {
       console.error("Error generating image:", error);
       alert("Failed to generate the image. Please try again.");
@@ -245,14 +247,14 @@ export default function RemoveItem() {
         <div className="model-menu-position">
           <span className="title-span-style">Model</span>
           <Button
-            className=" menu-btn-style"
+            className="menu-btn-style"
             id="fade-button"
             aria-controls={open ? "fade-menu" : undefined}
             aria-haspopup="true"
             aria-expanded={open ? "true" : undefined}
             onClick={handleClick}
           >
-            Stable Diffusion XD 2.0
+            {selectedModel}{" "}
             <ArrowDropDownRoundedIcon
               fontSize="large"
               sx={{ color: "#00504B" }}
@@ -268,9 +270,14 @@ export default function RemoveItem() {
             onClose={handleClose}
             TransitionComponent={Fade}
           >
-            <MenuItem onClick={handleClose}>Profile</MenuItem>
-            <MenuItem onClick={handleClose}>My account</MenuItem>
-            <MenuItem onClick={handleClose}>Logout</MenuItem>
+            <MenuItem
+              onClick={() => {
+                setSelectedModel("Stable Diffusion XL");
+                handleClose();
+              }}
+            >
+              Stable Diffusion XL
+            </MenuItem>
           </Menu>
         </div>
         <div className="prompt-input">
@@ -432,11 +439,8 @@ export default function RemoveItem() {
             <Image
               src={generatedImage}
               alt="Generated Image"
-              width={700}
-              height={700}
-              style={{
-                marginTop: "20px",
-              }}
+              width={originalWidth! > 700 ? 700 : originalWidth!}
+              height={originalHeight! > 700 ? 700 : originalHeight!}
               objectFit="contain"
             />
           </div>

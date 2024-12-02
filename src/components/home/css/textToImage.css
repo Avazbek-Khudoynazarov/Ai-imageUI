@@ -242,7 +242,8 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
+  padding: 0px 10px;
 }
 
 .btn-create button {
