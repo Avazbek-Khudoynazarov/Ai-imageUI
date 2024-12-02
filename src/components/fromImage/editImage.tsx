@@ -488,6 +488,22 @@ export default function EditImage() {
           </div>
         )}
       </div>
+      <button
+        style={{ display: "none" }}
+        onClick={handleGenerateSVG}
+        disabled={isTranslating || isLoading}
+      >
+        {isLoading
+          ? "Generating..."
+          : isTranslating
+          ? "Translating..."
+          : "Create"}
+      </button>
+      {translatedPrompt && (
+        <div style={{ marginTop: "10px", color: "#2f7367", display: "none" }}>
+          <strong>Translated Prompt:</strong> {translatedPrompt}
+        </div>
+      )}
     </div>
   );
 }
