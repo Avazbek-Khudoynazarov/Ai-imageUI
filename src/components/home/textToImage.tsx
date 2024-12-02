@@ -38,8 +38,6 @@ export default function TextToImage() {
 
   const handleClose = () => {
     setAnchorEl(null);
-    isTranslating;
-    translatePrompt;
   };
   const [open2, setOpen2] = useState(false);
 
@@ -467,6 +465,24 @@ export default function TextToImage() {
           <button onClick={handleGenerateImage}>
             {isLoading ? "Generating..." : "Create"}
           </button>
+          <button
+            style={{ display: "none" }}
+            onClick={handleGenerateImage}
+            disabled={isTranslating || isLoading}
+          >
+            {isLoading
+              ? "Generating..."
+              : isTranslating
+              ? "Translating..."
+              : "Create"}
+          </button>
+          {translatedPrompt && (
+            <div
+              style={{ marginTop: "10px", color: "#2f7367", display: "none" }}
+            >
+              <strong>Translated Prompt:</strong> {translatedPrompt}
+            </div>
+          )}
         </div>
       </div>
       <div className="image-board">
