@@ -26,7 +26,8 @@ export default function TextToImage() {
   const [count, setCount] = useState(1);
   const [selectedModel, setSelectedModel] = useState("Stable Diffusion XL");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [translatedPrompt, setTranslatedPrompt] = useState("");
   const [images, setImages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const pathname = usePathname();
@@ -65,14 +66,51 @@ export default function TextToImage() {
   const handleDelete = (index: number) => {
     setImages((prevImages) => prevImages.filter((_, i) => i !== index));
   };
+
+  const isKorean = (text: string): boolean => {
+    const pattern = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/;
+    return pattern.test(text);
+  };
+
+  const translatePrompt = async (text: string): Promise<string> => {
+    if (!isKorean(text)) return text;
+
+    try {
+      const response = await axios.post("https://ai.yeongnam.com/translate", {
+        prompt: text,
+      });
+
+      return response.data.message.result.translatedText;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        // If it's an Axios error
+        console.error(
+          "Translation Error:",
+          error.response?.data || error.message
+        );
+        alert("Translation quota exceeded. Please use an English prompt.");
+      } else {
+        // If it's another error
+        console.error("Unexpected Error:", error);
+        alert("An unexpected error occurred.");
+      }
+      return text;
+    }
+  };
+
   const handleGenerateImage = async () => {
     if (!prompt) {
       alert("Please enter a prompt!");
       return;
     }
+    setIsTranslating(true);
+
+    const finalPrompt = await translatePrompt(prompt);
+    setTranslatedPrompt(finalPrompt);
+    setIsTranslating(false);
 
     const payload = {
-      prompt: `${prompt}, hyper-realistic, ultra-detailed, 8k resolution, photographic quality, highly realistic lighting, accurate textures, intricate details`,
+      prompt: `${finalPrompt}, hyper-realistic, ultra-detailed, 8k resolution, photographic quality, highly realistic lighting, accurate textures, intricate details`,
       negative_prompt: `${negativePrompt}, cartoon, anime, blurry, 3d render, painting, unrealistic`,
       sampler_name: "DPM++ SDE Karras",
       width: width,
@@ -90,7 +128,7 @@ export default function TextToImage() {
         payload,
         {
           headers: {
-            "Content-Type": "application/json; charset=utf-8",
+            "Content-Type": "application/json",
           },
         }
       );
