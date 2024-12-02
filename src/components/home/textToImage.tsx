@@ -83,14 +83,12 @@ export default function TextToImage() {
       return response.data.message.result.translatedText;
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        // If it's an Axios error
         console.error(
           "Translation Error:",
           error.response?.data || error.message
         );
         alert("Translation quota exceeded. Please use an English prompt.");
       } else {
-        // If it's another error
         console.error("Unexpected Error:", error);
         alert("An unexpected error occurred.");
       }

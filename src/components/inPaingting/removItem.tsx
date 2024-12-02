@@ -28,6 +28,8 @@ export default function RemoveItem() {
   const [originalWidth, setOriginalWidth] = useState<number | null>(null);
   const [originalHeight, setOriginalHeight] = useState<number | null>(null);
   const [selectedModel, setSelectedModel] = useState("Stable Diffusion XL");
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [translatedPrompt, setTranslatedPrompt] = useState("");
 
   const handleButtonClick = () => {
     if (fileInputRef.current) {
@@ -108,18 +110,53 @@ export default function RemoveItem() {
     }
     throw new Error("Failed to process mask canvas.");
   };
+
+  const isKorean = (text: string): boolean => {
+    const pattern = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/;
+    return pattern.test(text);
+  };
+
+  const translatePrompt = async (text: string): Promise<string> => {
+    if (!isKorean(text)) return text;
+
+    try {
+      const response = await axios.post("https://ai.yeongnam.com/translate", {
+        prompt: text,
+      });
+
+      return response.data.message.result.translatedText;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error(
+          "Translation Error:",
+          error.response?.data || error.message
+        );
+        alert("Translation quota exceeded. Please use an English prompt.");
+      } else {
+        console.error("Unexpected Error:", error);
+        alert("An unexpected error occurred.");
+      }
+      return text;
+    }
+  };
   const handleGenerateImage = async () => {
     if (!prompt || !imageSrc || !canvasRef.current) {
       alert("Please upload an image, draw a mask, and enter a prompt!");
       return;
     }
 
+    setIsTranslating(true);
+
+    const finalPrompt = await translatePrompt(prompt);
+    setTranslatedPrompt(finalPrompt);
+    setIsTranslating(false);
+
     try {
       const maskCanvas = processMaskCanvas(canvasRef.current);
       const base64Image = imageSrc.replace(/^data:image\/[a-z]+;base64,/, "");
 
       const payload = {
-        prompt: "A description of the image",
+        prompt: `${finalPrompt}, A description of the image`,
         mask: `data:image/png;base64,${maskCanvas}`,
         init_images: [`data:image/png;base64,${base64Image}`],
         sampler_name: "DPM++ SDE Karras",
@@ -442,7 +479,25 @@ export default function RemoveItem() {
               width={originalWidth! > 700 ? 700 : originalWidth!}
               height={originalHeight! > 700 ? 700 : originalHeight!}
               objectFit="contain"
+              draggable={false}
             />
+          </div>
+        )}
+
+        <button
+          style={{ display: "none" }}
+          onClick={handleGenerateImage}
+          disabled={isTranslating || isLoading}
+        >
+          {isLoading
+            ? "Generating..."
+            : isTranslating
+            ? "Translating..."
+            : "Create"}
+        </button>
+        {translatedPrompt && (
+          <div style={{ marginTop: "10px", color: "#2f7367", display: "none" }}>
+            <strong>Translated Prompt:</strong> {translatedPrompt}
           </div>
         )}
       </div>

@@ -26,6 +26,8 @@ export default function EditImage() {
   const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [selectedModel, setSelectedModel] = useState("Stable Diffusion XL");
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [translatedPrompt, setTranslatedPrompt] = useState("");
   const pathname = usePathname();
   const handleWidthChange = (event: Event, newValue: number | number[]) => {
     setWidth(newValue as number);
@@ -60,6 +62,35 @@ export default function EditImage() {
     }
   };
 
+  const isKorean = (text: string): boolean => {
+    const pattern = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/;
+    return pattern.test(text);
+  };
+
+  const translatePrompt = async (text: string): Promise<string> => {
+    if (!isKorean(text)) return text;
+
+    try {
+      const response = await axios.post("https://ai.yeongnam.com/translate", {
+        prompt: text,
+      });
+
+      return response.data.message.result.translatedText;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error(
+          "Translation Error:",
+          error.response?.data || error.message
+        );
+        alert("Translation quota exceeded. Please use an English prompt.");
+      } else {
+        console.error("Unexpected Error:", error);
+        alert("An unexpected error occurred.");
+      }
+      return text;
+    }
+  };
+
   const handleGenerateSVG = async () => {
     if (!prompt) {
       alert("Please enter a prompt!");
@@ -74,8 +105,14 @@ export default function EditImage() {
     try {
       const base64Image = imageSrc.replace(/^data:image\/[a-z]+;base64,/, "");
 
+      setIsTranslating(true);
+
+      const finalPrompt = await translatePrompt(prompt);
+      setTranslatedPrompt(finalPrompt);
+      setIsTranslating(false);
+
       const payload = {
-        prompt: `${prompt}, hyper-realistic, ultra-detailed, photo-realistic, natural lighting, high resolution, accurate textures, professional photography, cinematic`,
+        prompt: `${finalPrompt}, hyper-realistic, ultra-detailed, photo-realistic, natural lighting, high resolution, accurate textures, professional photography, cinematic`,
         negative_prompt:
           "cartoon, anime, low quality, blurry, 3D render, unrealistic, painting",
         sampler_name: "DPM++ SDE Karras",
