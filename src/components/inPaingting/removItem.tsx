@@ -13,7 +13,6 @@ import Fade from "@mui/material/Fade";
 import MenuItem from "@mui/material/MenuItem";
 
 import "../home/css/textToImage.css";
-import { Height } from "@mui/icons-material";
 
 export default function RemoveItem() {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -150,6 +149,7 @@ export default function RemoveItem() {
         prompt: "A description of the image",
         mask: `data:image/png;base64,${maskCanvas}`,
         init_images: [`data:image/png;base64,${base64Image}`],
+
         steps: 30,
         cfg_scale: 12,
       };
@@ -365,9 +365,9 @@ export default function RemoveItem() {
               style={{
                 zIndex: 1,
               }}
+              width={700}
+              height={700}
               objectFit="100%"
-              width={canvasWidth}
-              height={canvasHeight}
             />
             <canvas
               ref={canvasRef}
@@ -377,7 +377,6 @@ export default function RemoveItem() {
                 position: "absolute",
                 zIndex: 2,
                 backgroundColor: "transparent",
-                border: "2px solid yellow",
               }}
               onMouseDown={handleCanvasDrawing}
               onMouseMove={(e) => {

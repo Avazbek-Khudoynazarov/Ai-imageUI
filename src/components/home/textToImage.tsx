@@ -251,7 +251,7 @@ export default function TextToImage() {
             multiline
             minRows={3}
             value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
+            onChange={handlePromptChange}
             sx={{
               backgroundColor: "#d8f1f1",
               borderRadius: "8px",
