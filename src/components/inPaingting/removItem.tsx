@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -24,8 +24,9 @@ export default function RemoveItem() {
   const [prompt, setPrompt] = useState<string>("");
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const canvasWidth = 700;
-  const canvasHeight = 700;
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [originalWidth, setOriginalWidth] = useState<number | null>(null);
+  const [originalHeight, setOriginalHeight] = useState<number | null>(null);
 
   const handleButtonClick = () => {
     if (fileInputRef.current) {
@@ -47,35 +48,36 @@ export default function RemoveItem() {
         const imgElement = new window.Image();
         imgElement.src = reader.result as string;
         imgElement.onload = () => {
-          const aspectRatio =
-            imgElement.naturalWidth / imgElement.naturalHeight;
+          const originalWidth = imgElement.naturalWidth;
+          const originalHeight = imgElement.naturalHeight;
 
-          let targetWidth = canvasWidth;
-          let targetHeight = canvasHeight;
+          setOriginalWidth(originalWidth);
+          setOriginalHeight(originalHeight);
 
-          if (aspectRatio > 1) {
-            targetHeight = Math.round(canvasWidth / aspectRatio);
-          } else {
-            targetWidth = Math.round(canvasHeight * aspectRatio);
+          let displayWidth = originalWidth;
+          let displayHeight = originalHeight;
+
+          if (originalWidth > 700 || originalHeight > 700) {
+            const aspectRatio = originalWidth / originalHeight;
+            if (aspectRatio > 1) {
+              displayWidth = 700;
+              displayHeight = Math.round(700 / aspectRatio);
+            } else {
+              displayHeight = 700;
+              displayWidth = Math.round(700 * aspectRatio);
+            }
           }
 
           if (canvasRef.current) {
             const canvas = canvasRef.current;
-            canvas.width = canvasWidth;
-            canvas.height = canvasHeight;
             const ctx = canvas.getContext("2d");
 
             if (ctx) {
-              ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-              const offsetX = (canvasWidth - targetWidth) / 2;
-              const offsetY = (canvasHeight - targetHeight) / 2;
-              ctx.drawImage(
-                imgElement,
-                offsetX,
-                offsetY,
-                targetWidth,
-                targetHeight
-              );
+              canvas.width = displayWidth;
+              canvas.height = displayHeight;
+
+              ctx.clearRect(0, 0, displayWidth, displayHeight);
+              ctx.drawImage(imgElement, 0, 0, displayWidth, displayHeight);
             }
           }
           setImageSrc(reader.result as string);
@@ -85,64 +87,34 @@ export default function RemoveItem() {
     }
   };
 
-  const handleCanvasDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current;
-    if (canvas) {
-      const ctx = canvas.getContext("2d");
-      if (ctx) {
-        const rect = canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        console.log(`Drawing at: (${x}, ${y})`);
-        ctx.fillStyle = "rgba(255, 255, 255, 1)";
-        ctx.beginPath();
-        ctx.arc(x, y, 10, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    }
-  };
-
   const processMaskCanvas = (canvas: HTMLCanvasElement): string => {
     const ctx = canvas.getContext("2d");
-    if (!ctx) {
-      throw new Error("Failed to get 2D context from canvas.");
+    if (!ctx || !originalWidth || !originalHeight) {
+      throw new Error("Canvas context or original dimensions missing.");
     }
 
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const data = imageData.data;
+    const tempCanvas = document.createElement("canvas");
+    tempCanvas.width = originalWidth;
+    tempCanvas.height = originalHeight;
+    const tempCtx = tempCanvas.getContext("2d");
 
-    for (let i = 0; i < data.length; i += 4) {
-      const [r, g, b] = data.slice(i, i + 3);
+    if (tempCtx) {
+      tempCtx.drawImage(canvas, 0, 0, originalWidth, originalHeight);
 
-      if (r > 0 || g > 0 || b > 0) {
-        data[i] = 255;
-        data[i + 1] = 255;
-        data[i + 2] = 255;
-        data[i + 3] = 255;
-      } else {
-        data[i] = 0;
-        data[i + 1] = 0;
-        data[i + 2] = 0;
-        data[i + 3] = 0;
-      }
+      return tempCanvas
+        .toDataURL("image/png")
+        .replace(/^data:image\/[a-z]+;base64,/, "");
     }
-
-    ctx.putImageData(imageData, 0, 0);
-
-    return canvas
-      .toDataURL("image/png")
-      .replace(/^data:image\/[a-z]+;base64,/, "");
+    throw new Error("Failed to process mask canvas.");
   };
-
   const handleGenerateImage = async () => {
     if (!prompt || !imageSrc || !canvasRef.current) {
       alert("Please upload an image, draw a mask, and enter a prompt!");
       return;
     }
 
-    const maskCanvas = processMaskCanvas(canvasRef.current);
-
     try {
+      const maskCanvas = processMaskCanvas(canvasRef.current);
       const base64Image = imageSrc.replace(/^data:image\/[a-z]+;base64,/, "");
 
       const payload = {
@@ -176,6 +148,38 @@ export default function RemoveItem() {
       setIsLoading(false);
     }
   };
+
+  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    setIsDrawing(true);
+    draw(e);
+  };
+
+  const stopDrawing = () => {
+    setIsDrawing(false);
+  };
+
+  const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isDrawing) return;
+
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        ctx.fillStyle = "rgba(255, 255, 255, 1)";
+        ctx.beginPath();
+        ctx.arc(x, y, 10, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  };
+
+  useEffect(() => {
+    setGeneratedImage(null);
+  }, []);
 
   return (
     <div className="image-editor-main">
@@ -365,27 +369,26 @@ export default function RemoveItem() {
               style={{
                 zIndex: 1,
               }}
-              width={700}
-              height={700}
-              objectFit="100%"
+              width={originalWidth! > 700 ? 700 : originalWidth!}
+              height={originalHeight! > 700 ? 700 : originalHeight!}
+              objectFit="contain"
             />
             <canvas
               ref={canvasRef}
-              width={canvasWidth}
-              height={canvasHeight}
+              width={originalWidth! > 700 ? 700 : originalWidth!}
+              height={originalHeight! > 700 ? 700 : originalHeight!}
               style={{
                 position: "absolute",
                 zIndex: 2,
-                backgroundColor: "transparent",
               }}
-              onMouseDown={handleCanvasDrawing}
-              onMouseMove={(e) => {
-                if (e.buttons === 1) handleCanvasDrawing(e);
-              }}
-            />
+              onMouseDown={startDrawing}
+              onMouseUp={stopDrawing}
+              onMouseMove={draw}
+              onMouseLeave={stopDrawing}
+            ></canvas>
           </div>
         )}
-        {!imageSrc && (
+        {!imageSrc && !generatedImage && (
           <div
             style={{
               width: "100%",
@@ -415,17 +418,28 @@ export default function RemoveItem() {
             </div>
           </div>
         )}
+
         {generatedImage && (
-          <Image
-            src={generatedImage}
-            alt="Generated Image"
-            width={700} // Use the width from the state
-            height={700} // Use the height from the state
+          <div
             style={{
-              marginTop: "20px",
+              position: "relative",
+              width: "100%",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
             }}
-            objectFit="100%"
-          />
+          >
+            <Image
+              src={generatedImage}
+              alt="Generated Image"
+              width={700}
+              height={700}
+              style={{
+                marginTop: "20px",
+              }}
+              objectFit="contain"
+            />
+          </div>
         )}
       </div>
     </div>
