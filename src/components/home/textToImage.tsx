@@ -44,7 +44,6 @@ export default function TextToImage() {
   const handleOpen = (src: string) => {
     setSelectedImage(src);
     setOpen2(true);
-    translatedPrompt;
   };
   const handleClose2 = () => {
     setOpen2(false);
@@ -68,7 +67,7 @@ export default function TextToImage() {
     setImages((prevImages) => prevImages.filter((_, i) => i !== index));
   };
   const handleGenerateImage = async () => {
-    if (!prompt) {
+    if (!translatedPrompt) {
       alert("Please enter a prompt!");
       return;
     }
