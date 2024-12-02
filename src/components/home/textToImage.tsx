@@ -26,6 +26,7 @@ export default function TextToImage() {
   const [count, setCount] = useState(1);
   const [selectedModel, setSelectedModel] = useState("Stable Diffusion XL");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [translatedPrompt, setTranslatedPrompt] = useState("");
 
   const [images, setImages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -86,7 +87,7 @@ export default function TextToImage() {
     try {
       setIsLoading(true);
       const response = await axios.post(
-        "https://ai.yeongnam.com/sdapi/v1/txt2img",
+        "http://ai.yeongnam.com:7860/sdapi/v1/txt2img",
         payload,
         {
           headers: {
@@ -120,6 +121,29 @@ export default function TextToImage() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const translateText = async (text: string) => {
+    try {
+      const response = await axios.post("http://localhost:3030/translate", {
+        prompt: text,
+      });
+      if (response.status === 200) {
+        setTranslatedPrompt(response.data.message.result.translatedText);
+      }
+    } catch (error) {
+      console.error("Translation error:", error);
+      alert("Failed to translate text. Please try again.");
+    }
+  };
+  const handlePromptChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target.value;
+    setPrompt(input);
+    if (/[\u3131-\uD79D]/.test(input)) {
+      await translateText(input);
+    } else {
+      setTranslatedPrompt(input);
+    }
   };
 
   return (
